@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guest Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in { animation: fadeIn 0.3s ease-in; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <div id="app" class="p-4 max-w-6xl mx-auto"></div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
+        import { getDatabase, ref, onValue, push, update, remove } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBm5sw0sdFsXBxIvPcd0EIcf2i28XCBRWs",
+            authDomain: "compassgenerated.firebaseapp.com",
+            databaseURL: "https://compassgenerated-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "compassgenerated",
+            storageBucket: "compassgenerated.firebasestorage.app",
+            messagingSenderId: "43313959624",
+            appId: "1:43313959624:web:66d019a4109a0f97718055"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        let guests = [];
+        let showForm = false;
+        let editingId = null;
+        let formData = {
+            name: '', mobile: '', arrivalDate: '', arrivalTime: '', arrivalMode: '',
+            arrivalModeDetails: '', departureDate: '', departureTime: '', departureMode: '',
+            departureModeDetails: '', pickupAssigned: '', dropAssigned: ''
+        };
+
+        const guestsRef = ref(database, 'guests');
+        onValue(guestsRef, (snapshot) => {
+            const data = snapshot.val();
+            guests = data ? Object.keys(data).map(key => ({ id: key, ...data[key] })) : [];
+            render();
+        });
+
+        function showSuccess(message) {
+            const successDiv = document.createElement('div');
+            successDiv.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg fade-in z-50';
+            successDiv.innerHTML = `✓ ${message}`;
+            document.body.appendChild(successDiv);
+            setTimeout(() => successDiv.remove(), 3000);
+        }
+
+        async function handleSubmit() {
+            if (!formData.name || !formData.mobile || !formData.arrivalDate || !formData.arrivalTime || 
+                !formData.arrivalMode || !formData.departureDate || !formData.departureTime || !formData.departureMode) {
+                alert('Please fill in all required fields');
+                return;
+            }
+
+            try {
+                if (editingId) {
+                    await update(ref(database, `guests/${editingId}`), formData);
+                    showSuccess('Guest updated successfully!');
+                    editingId = null;
+                } else {
+                    await push(guestsRef, formData);
+                    showSuccess('Guest added successfully!');
+                }
+                resetForm();
+            } catch (err) {
+                alert(`Error: ${err.message}`);
+            }
+        }
+
+        function resetForm() {
+            formData = {
+                name: '', mobile: '', arrivalDate: '', arrivalTime: '', arrivalMode: '',
+                arrivalModeDetails: '', departureDate: '', departureTime: '', departureMode: '',
+                departureModeDetails: '', pickupAssigned: '', dropAssigned: ''
+            };
+            showForm = false;
+            render();
+        }
+
+        function handleEdit(guest) {
+            const { id, ...guestData } = guest;
+            formData = guestData;
+            editingId = guest.id;
+            showForm = true;
+            render();
+        }
+
+        async function handleDelete(id) {
+            if (!confirm('Are you sure you want to delete this guest?')) return;
+            try {
+                await remove(ref(database, `guests/${id}`));
+                showSuccess('Guest deleted successfully!');
+            } catch (err) {
+                alert(`Error: ${err.message}`);
+            }
+        }
+
+        function sendPickupSMS(guest) {
+            const msg = `Hi ${guest.name}, your pickup details:\nDate: ${guest.arrivalDate}\nTime: ${guest.arrivalTime}\nMode: ${guest.arrivalMode} ${guest.arrivalModeDetails}\nDriver: ${guest.pickupAssigned}`;
+            window.location.href = `sms:${guest.mobile}?body=${encodeURIComponent(msg)}`;
+        }
+
+        function sendPickupWhatsApp(guest) {
+            const msg = `Hi ${guest.name}, your pickup details:\nDate: ${guest.arrivalDate}\nTime: ${guest.arrivalTime}\nMode: ${guest.arrivalMode} ${guest.arrivalModeDetails}\nDriver: ${guest.pickupAssigned}`;
+            window.open(`https://wa.me/${guest.mobile}?text=${encodeURIComponent(msg)}`, '_blank');
+        }
+
+        function sendDropSMS(guest) {
+            const msg = `Hi ${guest.name}, your drop details:\nDate: ${guest.departureDate}\nTime: ${guest.departureTime}\nMode: ${guest.departureMode} ${guest.departureModeDetails}\nDriver: ${guest.dropAssigned}`;
+            window.location.href = `sms:${guest.mobile}?body=${encodeURIComponent(msg)}`;
+        }
+
+        function sendDropWhatsApp(guest) {
+            const msg = `Hi ${guest.name}, your drop details:\nDate: ${guest.departureDate}\nTime: ${guest.departureTime}\nMode: ${guest.departureMode} ${guest.departureModeDetails}\nDriver: ${guest.dropAssigned}`;
+            window.open(`https://wa.me/${guest.mobile}?text=${encodeURIComponent(msg)}`, '_blank');
+        }
+
+        function render() {
+            document.getElementById('app').innerHTML = `
+                <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <div>
+                            <h1 class="text-3xl font-bold text-indigo-900">Guest Management System</h1>
+                            <p class="text-sm text-gray-600 mt-1">Firebase Connected • ${guests.length} guests</p>
+                        </div>
+                        <button onclick="toggleForm()" class="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition">
+                            ${showForm ? '✕ Cancel' : '+ Add Guest'}
+                        </button>
+                    </div>
+
+                    ${showForm ? `
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 p-6 bg-gray-50 rounded-lg">
+                            <div class="col-span-1 md:col-span-2">
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Guest Name *</label>
+                                <input type="text" id="name" value="${formData.name}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Mobile Number *</label>
+                                <input type="tel" id="mobile" value="${formData.mobile}" placeholder="919876543210" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Arrival Date *</label>
+                                <input type="date" id="arrivalDate" value="${formData.arrivalDate}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Arrival Time *</label>
+                                <input type="time" id="arrivalTime" value="${formData.arrivalTime}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Arrival Mode *</label>
+                                <select id="arrivalMode" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                    <option value="">Select mode</option>
+                                    <option value="Flight" ${formData.arrivalMode === 'Flight' ? 'selected' : ''}>Flight</option>
+                                    <option value="Train" ${formData.arrivalMode === 'Train' ? 'selected' : ''}>Train</option>
+                                    <option value="Bus" ${formData.arrivalMode === 'Bus' ? 'selected' : ''}>Bus</option>
+                                    <option value="Car" ${formData.arrivalMode === 'Car' ? 'selected' : ''}>Car</option>
+                                    <option value="Other" ${formData.arrivalMode === 'Other' ? 'selected' : ''}>Other</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Arrival Details</label>
+                                <input type="text" id="arrivalModeDetails" value="${formData.arrivalModeDetails}" placeholder="Flight/Train number" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Pickup Assigned To</label>
+                                <input type="text" id="pickupAssigned" value="${formData.pickupAssigned}" placeholder="Driver name" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Departure Date *</label>
+                                <input type="date" id="departureDate" value="${formData.departureDate}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Departure Time *</label>
+                                <input type="time" id="departureTime" value="${formData.departureTime}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Departure Mode *</label>
+                                <select id="departureMode" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                    <option value="">Select mode</option>
+                                    <option value="Flight" ${formData.departureMode === 'Flight' ? 'selected' : ''}>Flight</option>
+                                    <option value="Train" ${formData.departureMode === 'Train' ? 'selected' : ''}>Train</option>
+                                    <option value="Bus" ${formData.departureMode === 'Bus' ? 'selected' : ''}>Bus</option>
+                                    <option value="Car" ${formData.departureMode === 'Car' ? 'selected' : ''}>Car</option>
+                                    <option value="Other" ${formData.departureMode === 'Other' ? 'selected' : ''}>Other</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Departure Details</label>
+                                <input type="text" id="departureModeDetails" value="${formData.departureModeDetails}" placeholder="Flight/Train number" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Drop Assigned To</label>
+                                <input type="text" id="dropAssigned" value="${formData.dropAssigned}" placeholder="Driver name" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                            </div>
+                            <div class="col-span-1 md:col-span-2">
+                                <button onclick="saveForm()" class="w-full bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition font-semibold">
+                                    ${editingId ? 'Update Guest' : 'Add Guest'}
+                                </button>
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+
+                <div class="grid gap-4">
+                    ${guests.length === 0 ? `
+                        <div class="bg-white rounded-lg shadow p-8 text-center text-gray-500">
+                            No guests added yet. Click "Add Guest" to get started.
+                        </div>
+                    ` : guests.map(guest => `
+                        <div class="bg-white rounded-lg shadow-lg p-6">
+                            <div class="flex justify-between items-start mb-4">
+                                <div>
+                                    <h2 class="text-2xl font-bold text-indigo-900">${guest.name}</h2>
+                                    <p class="text-gray-600">${guest.mobile}</p>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button onclick="editGuest('${guest.id}')" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg">✏️</button>
+                                    <button onclick="deleteGuest('${guest.id}')" class="p-2 text-red-600 hover:bg-red-50 rounded-lg">🗑️</button>
+                                </div>
+                            </div>
+                            <div class="grid md:grid-cols-2 gap-6">
+                                <div class="bg-green-50 rounded-lg p-4">
+                                    <h3 class="font-semibold text-green-900 mb-3 text-lg">Arrival Details</h3>
+                                    <p class="text-sm text-gray-700 mb-1"><span class="font-semibold">Date:</span> ${guest.arrivalDate}</p>
+                                    <p class="text-sm text-gray-700 mb-1"><span class="font-semibold">Time:</span> ${guest.arrivalTime}</p>
+                                    <p class="text-sm text-gray-700 mb-1"><span class="font-semibold">Mode:</span> ${guest.arrivalMode} ${guest.arrivalModeDetails}</p>
+                                    <p class="text-sm text-gray-700 mb-3"><span class="font-semibold">Pickup:</span> ${guest.pickupAssigned || 'Not assigned'}</p>
+                                    <div class="flex gap-2">
+                                        <button onclick="sendPickupSMS('${guest.id}')" class="flex-1 bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 text-sm">📱 SMS</button>
+                                        <button onclick="sendPickupWA('${guest.id}')" class="flex-1 bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 text-sm">💬 WhatsApp</button>
+                                    </div>
+                                </div>
+                                <div class="bg-orange-50 rounded-lg p-4">
+                                    <h3 class="font-semibold text-orange-900 mb-3 text-lg">Departure Details</h3>
+                                    <p class="text-sm text-gray-700 mb-1"><span class="font-semibold">Date:</span> ${guest.departureDate}</p>
+                                    <p class="text-sm text-gray-700 mb-1"><span class="font-semibold">Time:</span> ${guest.departureTime}</p>
+                                    <p class="text-sm text-gray-700 mb-1"><span class="font-semibold">Mode:</span> ${guest.departureMode} ${guest.departureModeDetails}</p>
+                                    <p class="text-sm text-gray-700 mb-3"><span class="font-semibold">Drop:</span> ${guest.dropAssigned || 'Not assigned'}</p>
+                                    <div class="flex gap-2">
+                                        <button onclick="sendDropSMS('${guest.id}')" class="flex-1 bg-orange-600 text-white px-3 py-2 rounded-lg hover:bg-orange-700 text-sm">📱 SMS</button>
+                                        <button onclick="sendDropWA('${guest.id}')" class="flex-1 bg-orange-600 text-white px-3 py-2 rounded-lg hover:bg-orange-700 text-sm">💬 WhatsApp</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        window.toggleForm = () => { showForm = !showForm; if (!showForm) resetForm(); else render(); };
+        window.saveForm = () => {
+            formData.name = document.getElementById('name').value;
+            formData.mobile = document.getElementById('mobile').value;
+            formData.arrivalDate = document.getElementById('arrivalDate').value;
+            formData.arrivalTime = document.getElementById('arrivalTime').value;
+            formData.arrivalMode = document.getElementById('arrivalMode').value;
+            formData.arrivalModeDetails = document.getElementById('arrivalModeDetails').value;
+            formData.pickupAssigned = document.getElementById('pickupAssigned').value;
+            formData.departureDate = document.getElementById('departureDate').value;
+            formData.departureTime = document.getElementById('departureTime').value;
+            formData.departureMode = document.getElementById('departureMode').value;
+            formData.departureModeDetails = document.getElementById('departureModeDetails').value;
+            formData.dropAssigned = document.getElementById('dropAssigned').value;
+            handleSubmit();
+        };
+        window.editGuest = (id) => handleEdit(guests.find(g => g.id === id));
+        window.deleteGuest = (id) => handleDelete(id);
+        window.sendPickupSMS = (id) => sendPickupSMS(guests.find(g => g.id === id));
+        window.sendPickupWA = (id) => sendPickupWhatsApp(guests.find(g => g.id === id));
+        window.sendDropSMS = (id) => sendDropSMS(guests.find(g => g.id === id));
+        window.sendDropWA = (id) => sendDropWhatsApp(guests.find(g => g.id === id));
+
+        render();
+    </script>
+</body>
+</html>
