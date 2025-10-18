@@ -39,7 +39,9 @@
         let formData = {
             name: '', mobile: '', arrivalDate: '', arrivalTime: '', arrivalMode: '',
             arrivalModeDetails: '', departureDate: '', departureTime: '', departureMode: '',
-            departureModeDetails: '', pickupAssigned: '', dropAssigned: ''
+            departureModeDetails: '', 
+            pickupDriver: '', pickupCarNumber: '', pickupCarMake: '',
+            dropDriver: '', dropCarNumber: '', dropCarMake: ''
         };
 
         const guestsRef = ref(database, 'guests');
@@ -83,7 +85,9 @@
             formData = {
                 name: '', mobile: '', arrivalDate: '', arrivalTime: '', arrivalMode: '',
                 arrivalModeDetails: '', departureDate: '', departureTime: '', departureMode: '',
-                departureModeDetails: '', pickupAssigned: '', dropAssigned: ''
+                departureModeDetails: '', 
+                pickupDriver: '', pickupCarNumber: '', pickupCarMake: '',
+                dropDriver: '', dropCarNumber: '', dropCarMake: ''
             };
             showForm = false;
             render();
@@ -108,22 +112,22 @@
         }
 
         function sendPickupSMS(guest) {
-            const msg = `Hi ${guest.name}, your pickup details:\nDate: ${guest.arrivalDate}\nTime: ${guest.arrivalTime}\nMode: ${guest.arrivalMode} ${guest.arrivalModeDetails}\nDriver: ${guest.pickupAssigned}`;
-            window.location.href = `sms:${guest.mobile}?body=${encodeURIComponent(msg)}`;
+            const msg = `Dear ${guest.name},\n\nYour pick-up for arrival on ${guest.arrivalDate} at ${guest.arrivalTime} has been arranged.\n\nPick-up Assignment:\n${guest.pickupAssigned}\n\nWe look forward to welcoming you!\n\nBhatnagar family`;
+            window.open(`sms:${guest.mobile}${/iPhone|iPad|iPod/.test(navigator.userAgent) ? '&' : '?'}body=${encodeURIComponent(msg)}`, '_blank');
         }
 
         function sendPickupWhatsApp(guest) {
-            const msg = `Hi ${guest.name}, your pickup details:\nDate: ${guest.arrivalDate}\nTime: ${guest.arrivalTime}\nMode: ${guest.arrivalMode} ${guest.arrivalModeDetails}\nDriver: ${guest.pickupAssigned}`;
+            const msg = `Dear ${guest.name},\n\nYour pick-up for arrival on ${guest.arrivalDate} at ${guest.arrivalTime} has been arranged.\n\nPick-up Assignment:\n${guest.pickupAssigned}\n\nWe look forward to welcoming you!\n\nBhatnagar family`;
             window.open(`https://wa.me/${guest.mobile}?text=${encodeURIComponent(msg)}`, '_blank');
         }
 
         function sendDropSMS(guest) {
-            const msg = `Hi ${guest.name}, your drop details:\nDate: ${guest.departureDate}\nTime: ${guest.departureTime}\nMode: ${guest.departureMode} ${guest.departureModeDetails}\nDriver: ${guest.dropAssigned}`;
-            window.location.href = `sms:${guest.mobile}?body=${encodeURIComponent(msg)}`;
+            const msg = `Dear ${guest.name},\n\nYour drop for departure on ${guest.departureDate} at ${guest.departureTime} has been arranged.\n\nDrop Assignment:\n${guest.dropAssigned}\n\nThank you for visiting us!\n\nBhatnagar family`;
+            window.open(`sms:${guest.mobile}${/iPhone|iPad|iPod/.test(navigator.userAgent) ? '&' : '?'}body=${encodeURIComponent(msg)}`, '_blank');
         }
 
         function sendDropWhatsApp(guest) {
-            const msg = `Hi ${guest.name}, your drop details:\nDate: ${guest.departureDate}\nTime: ${guest.departureTime}\nMode: ${guest.departureMode} ${guest.departureModeDetails}\nDriver: ${guest.dropAssigned}`;
+            const msg = `Dear ${guest.name},\n\nYour drop for departure on ${guest.departureDate} at ${guest.dartureTime} has been arranged.\n\nDrop Assignment:\n${guest.dropAssigned}\n\nThank you for visiting us!\n\nBhatnagar family`;
             window.open(`https://wa.me/${guest.mobile}?text=${encodeURIComponent(msg)}`, '_blank');
         }
 
@@ -173,9 +177,22 @@
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">Arrival Details</label>
                                 <input type="text" id="arrivalModeDetails" value="${formData.arrivalModeDetails}" placeholder="Flight/Train number" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
                             </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">Pickup Assigned To</label>
-                                <input type="text" id="pickupAssigned" value="${formData.pickupAssigned}" placeholder="Driver name" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                            <div class="col-span-1 md:col-span-2 bg-green-50 p-4 rounded-lg">
+                                <h3 class="font-semibold text-green-900 mb-3">Pickup Assignment</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                    <div>
+                                        <label class="block text-sm font-semibold text-gray-700 mb-2">Driver Name</label>
+                                        <input type="text" id="pickupDriver" value="${formData.pickupDriver}" placeholder="Driver name" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-semibold text-gray-700 mb-2">Car Number</label>
+                                        <input type="text" id="pickupCarNumber" value="${formData.pickupCarNumber}" placeholder="DL 01 AB 1234" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-semibold text-gray-700 mb-2">Car Make</label>
+                                        <input type="text" id="pickupCarMake" value="${formData.pickupCarMake}" placeholder="Toyota Innova" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                    </div>
+                                </div>
                             </div>
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">Departure Date *</label>
@@ -200,9 +217,22 @@
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">Departure Details</label>
                                 <input type="text" id="departureModeDetails" value="${formData.departureModeDetails}" placeholder="Flight/Train number" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
                             </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">Drop Assigned To</label>
-                                <input type="text" id="dropAssigned" value="${formData.dropAssigned}" placeholder="Driver name" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                            <div class="col-span-1 md:col-span-2 bg-orange-50 p-4 rounded-lg">
+                                <h3 class="font-semibold text-orange-900 mb-3">Drop Assignment</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                    <div>
+                                        <label class="block text-sm font-semibold text-gray-700 mb-2">Driver Name</label>
+                                        <input type="text" id="dropDriver" value="${formData.dropDriver}" placeholder="Driver name" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-semibold text-gray-700 mb-2">Car Number</label>
+                                        <input type="text" id="dropCarNumber" value="${formData.dropCarNumber}" placeholder="DL 01 AB 1234" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-semibold text-gray-700 mb-2">Car Make</label>
+                                        <input type="text" id="dropCarMake" value="${formData.dropCarMake}" placeholder="Toyota Innova" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                    </div>
+                                </div>
                             </div>
                             <div class="col-span-1 md:col-span-2">
                                 <button onclick="saveForm()" class="w-full bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition font-semibold">
@@ -236,7 +266,8 @@
                                     <p class="text-sm text-gray-700 mb-1"><span class="font-semibold">Date:</span> ${guest.arrivalDate}</p>
                                     <p class="text-sm text-gray-700 mb-1"><span class="font-semibold">Time:</span> ${guest.arrivalTime}</p>
                                     <p class="text-sm text-gray-700 mb-1"><span class="font-semibold">Mode:</span> ${guest.arrivalMode} ${guest.arrivalModeDetails}</p>
-                                    <p class="text-sm text-gray-700 mb-3"><span class="font-semibold">Pickup:</span> ${guest.pickupAssigned || 'Not assigned'}</p>
+                                    <p class="text-sm text-gray-700 mb-1"><span class="font-semibold">Driver:</span> ${guest.pickupDriver || 'Not assigned'}</p>
+                                    <p class="text-sm text-gray-700 mb-1"><span class="font-semibold">Car:</span> ${guest.pickupCarMake || ''} ${guest.pickupCarNumber || ''}</p>
                                     <div class="flex gap-2">
                                         <button onclick="sendPickupSMS('${guest.id}')" class="flex-1 bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 text-sm">📱 SMS</button>
                                         <button onclick="sendPickupWA('${guest.id}')" class="flex-1 bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 text-sm">💬 WhatsApp</button>
@@ -247,7 +278,8 @@
                                     <p class="text-sm text-gray-700 mb-1"><span class="font-semibold">Date:</span> ${guest.departureDate}</p>
                                     <p class="text-sm text-gray-700 mb-1"><span class="font-semibold">Time:</span> ${guest.departureTime}</p>
                                     <p class="text-sm text-gray-700 mb-1"><span class="font-semibold">Mode:</span> ${guest.departureMode} ${guest.departureModeDetails}</p>
-                                    <p class="text-sm text-gray-700 mb-3"><span class="font-semibold">Drop:</span> ${guest.dropAssigned || 'Not assigned'}</p>
+                                    <p class="text-sm text-gray-700 mb-1"><span class="font-semibold">Driver:</span> ${guest.dropDriver || 'Not assigned'}</p>
+                                    <p class="text-sm text-gray-700 mb-3"><span class="font-semibold">Car:</span> ${guest.dropCarMake || ''} ${guest.dropCarNumber || ''}</p>
                                     <div class="flex gap-2">
                                         <button onclick="sendDropSMS('${guest.id}')" class="flex-1 bg-orange-600 text-white px-3 py-2 rounded-lg hover:bg-orange-700 text-sm">📱 SMS</button>
                                         <button onclick="sendDropWA('${guest.id}')" class="flex-1 bg-orange-600 text-white px-3 py-2 rounded-lg hover:bg-orange-700 text-sm">💬 WhatsApp</button>
@@ -268,12 +300,16 @@
             formData.arrivalTime = document.getElementById('arrivalTime').value;
             formData.arrivalMode = document.getElementById('arrivalMode').value;
             formData.arrivalModeDetails = document.getElementById('arrivalModeDetails').value;
-            formData.pickupAssigned = document.getElementById('pickupAssigned').value;
+            formData.pickupDriver = document.getElementById('pickupDriver').value;
+            formData.pickupCarNumber = document.getElementById('pickupCarNumber').value;
+            formData.pickupCarMake = document.getElementById('pickupCarMake').value;
             formData.departureDate = document.getElementById('departureDate').value;
             formData.departureTime = document.getElementById('departureTime').value;
             formData.departureMode = document.getElementById('departureMode').value;
             formData.departureModeDetails = document.getElementById('departureModeDetails').value;
-            formData.dropAssigned = document.getElementById('dropAssigned').value;
+            formData.dropDriver = document.getElementById('dropDriver').value;
+            formData.dropCarNumber = document.getElementById('dropCarNumber').value;
+            formData.dropCarMake = document.getElementById('dropCarMake').value;
             handleSubmit();
         };
         window.editGuest = (id) => handleEdit(guests.find(g => g.id === id));
