@@ -346,7 +346,9 @@
         };
         window.editGuest = (id) => handleEdit(guests.find(g => g.id === id));
         window.deleteGuest = (id) => handleDelete(id);
+        window.sendPickupSMS = (id) => sendPickupSMS(guests.find(g => g.id === id));
         window.sendPickupWA = (id) => sendPickupWhatsApp(guests.find(g => g.id === id));
+        window.sendDropSMS = (id) => sendDropSMS(guests.find(g => g.id === id));
         window.sendDropWA = (id) => sendDropWhatsApp(guests.find(g => g.id === id));
 
         render();
