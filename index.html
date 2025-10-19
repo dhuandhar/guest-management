@@ -323,12 +323,15 @@
                                     ${guest.pickupDriver || guest.pickupCarMake || guest.pickupCarNumber ? `
                                         <p class="text-sm text-gray-700 mb-1">
                                             <span class="font-semibold">Driver:</span> ${guest.pickupDriver || 'TBA'}
-                                            ${guest.pickupDriverMobile ? `
-                                                <button onclick="callDriver('${guest.pickupDriverMobile}', '${guest.pickupDriver}')" class="ml-2 text-green-600 hover:text-green-800 font-semibold">
-                                                    📞 ${guest.pickupDriverMobile}
-                                                </button>
-                                            ` : ''}
                                         </p>
+                                        ${guest.pickupDriverMobile ? `
+                                            <p class="text-sm text-gray-700 mb-1">
+                                                <span class="font-semibold">Mobile:</span>
+                                                <a href="tel:${guest.pickupDriverMobile}" class="ml-2 text-green-600 hover:text-green-800 font-semibold underline">
+                                                    📞 ${guest.pickupDriverMobile}
+                                                </a>
+                                            </p>
+                                        ` : ''}
                                         <p class="text-sm text-gray-700 mb-1"><span class="font-semibold">Car:</span> ${guest.pickupCarMake || ''} ${guest.pickupCarNumber || ''}</p>
                                     ` : ''}
                                     
@@ -348,12 +351,15 @@
                                     ${guest.dropDriver || guest.dropCarMake || guest.dropCarNumber ? `
                                         <p class="text-sm text-gray-700 mb-1">
                                             <span class="font-semibold">Driver:</span> ${guest.dropDriver || 'TBA'}
-                                            ${guest.dropDriverMobile ? `
-                                                <button onclick="callDriver('${guest.dropDriverMobile}', '${guest.dropDriver}')" class="ml-2 text-orange-600 hover:text-orange-800 font-semibold">
-                                                    📞 ${guest.dropDriverMobile}
-                                                </button>
-                                            ` : ''}
                                         </p>
+                                        ${guest.dropDriverMobile ? `
+                                            <p class="text-sm text-gray-700 mb-1">
+                                                <span class="font-semibold">Mobile:</span>
+                                                <a href="tel:${guest.dropDriverMobile}" class="ml-2 text-orange-600 hover:text-orange-800 font-semibold underline">
+                                                    📞 ${guest.dropDriverMobile}
+                                                </a>
+                                            </p>
+                                        ` : ''}
                                         <p class="text-sm text-gray-700 mb-3"><span class="font-semibold">Car:</span> ${guest.dropCarMake || ''} ${guest.dropCarNumber || ''}</p>
                                     ` : ''}
                                     
@@ -396,7 +402,6 @@
         window.deleteGuest = (id) => handleDelete(id);
         window.sendPickupWA = (id) => sendPickupWhatsApp(guests.find(g => g.id === id));
         window.sendDropWA = (id) => sendDropWhatsApp(guests.find(g => g.id === id));
-        window.callDriver = (phone, name) => callDriver(phone, name);
 
         render();
     </script>
