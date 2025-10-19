@@ -218,7 +218,12 @@
                                     </div>
                                     <div>
                                         <label class="block text-sm font-semibold text-gray-700 mb-2">Driver Mobile</label>
-                                        <input type="tel" id="pickupDriverMobile" value="${formData.pickupDriverMobile}" placeholder="919876543210" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                        <div class="flex">
+                                            <span class="inline-flex items-center px-3 text-sm text-gray-900 bg-gray-200 border border-r-0 border-gray-300 rounded-l-lg">
+                                                +91
+                                            </span>
+                                            <input type="tel" id="pickupDriverMobile" value="${formData.pickupDriverMobile}" placeholder="9876543210" class="rounded-none rounded-r-lg flex-1 min-w-0 w-full px-4 py-2 border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                        </div>
                                     </div>
                                     <div>
                                         <label class="block text-sm font-semibold text-gray-700 mb-2">Car Number</label>
@@ -267,7 +272,12 @@
                                     </div>
                                     <div>
                                         <label class="block text-sm font-semibold text-gray-700 mb-2">Driver Mobile</label>
-                                        <input type="tel" id="dropDriverMobile" value="${formData.dropDriverMobile}" placeholder="919876543210" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                        <div class="flex">
+                                            <span class="inline-flex items-center px-3 text-sm text-gray-900 bg-gray-200 border border-r-0 border-gray-300 rounded-l-lg">
+                                                +91
+                                            </span>
+                                            <input type="tel" id="dropDriverMobile" value="${formData.dropDriverMobile}" placeholder="9876543210" class="rounded-none rounded-r-lg flex-1 min-w-0 w-full px-4 py-2 border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                        </div>
                                     </div>
                                     <div>
                                         <label class="block text-sm font-semibold text-gray-700 mb-2">Car Number</label>
@@ -327,8 +337,8 @@
                                         ${guest.pickupDriverMobile ? `
                                             <p class="text-sm text-gray-700 mb-1">
                                                 <span class="font-semibold">Mobile:</span>
-                                                <a href="tel:${guest.pickupDriverMobile}" class="ml-2 text-green-600 hover:text-green-800 font-semibold underline">
-                                                    📞 ${guest.pickupDriverMobile}
+                                                <a href="tel:+${guest.pickupDriverMobile}" class="ml-2 text-green-600 hover:text-green-800 font-semibold underline">
+                                                    📞 +${guest.pickupDriverMobile}
                                                 </a>
                                             </p>
                                         ` : ''}
@@ -355,8 +365,8 @@
                                         ${guest.dropDriverMobile ? `
                                             <p class="text-sm text-gray-700 mb-1">
                                                 <span class="font-semibold">Mobile:</span>
-                                                <a href="tel:${guest.dropDriverMobile}" class="ml-2 text-orange-600 hover:text-orange-800 font-semibold underline">
-                                                    📞 ${guest.dropDriverMobile}
+                                                <a href="tel:+${guest.dropDriverMobile}" class="ml-2 text-orange-600 hover:text-orange-800 font-semibold underline">
+                                                    📞 +${guest.dropDriverMobile}
                                                 </a>
                                             </p>
                                         ` : ''}
@@ -385,7 +395,11 @@
             formData.arrivalMode = document.getElementById('arrivalMode').value;
             formData.arrivalModeDetails = document.getElementById('arrivalModeDetails').value;
             formData.pickupDriver = document.getElementById('pickupDriver').value;
-            formData.pickupDriverMobile = document.getElementById('pickupDriverMobile').value;
+            
+            // Add +91 prefix if not present
+            let pickupMobile = document.getElementById('pickupDriverMobile').value;
+            formData.pickupDriverMobile = pickupMobile ? (pickupMobile.startsWith('91') ? pickupMobile : '91' + pickupMobile) : '';
+            
             formData.pickupCarNumber = document.getElementById('pickupCarNumber').value;
             formData.pickupCarMake = document.getElementById('pickupCarMake').value;
             formData.departureDate = document.getElementById('departureDate').value;
@@ -393,7 +407,11 @@
             formData.departureMode = document.getElementById('departureMode').value;
             formData.departureModeDetails = document.getElementById('departureModeDetails').value;
             formData.dropDriver = document.getElementById('dropDriver').value;
-            formData.dropDriverMobile = document.getElementById('dropDriverMobile').value;
+            
+            // Add +91 prefix if not present
+            let dropMobile = document.getElementById('dropDriverMobile').value;
+            formData.dropDriverMobile = dropMobile ? (dropMobile.startsWith('91') ? dropMobile : '91' + dropMobile) : '';
+            
             formData.dropCarNumber = document.getElementById('dropCarNumber').value;
             formData.dropCarMake = document.getElementById('dropCarMake').value;
             handleSubmit();
