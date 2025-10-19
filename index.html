@@ -418,8 +418,93 @@
         };
         window.editGuest = (id) => handleEdit(guests.find(g => g.id === id));
         window.deleteGuest = (id) => handleDelete(id);
-        window.sendPickupWA = (id) => sendPickupWhatsApp(guests.find(g => g.id === id));
-        window.sendDropWA = (id) => sendDropWhatsApp(guests.find(g => g.id === id));
+        window.sendPickupWA = async (id) => {
+            const guest = guests.find(g => g.id === id);
+            if (!guest) {
+                alert('Guest not found');
+                return;
+            }
+            
+            console.log('Guest data:', guest);
+            console.log('pickupMessageSent:', guest.pickupMessageSent);
+            
+            if (guest.pickupMessageSent === true) {
+                const resend = confirm(`⚠️ WhatsApp message was already sent for ${guest.name}'s pickup.\n\nDo you want to send it again?`);
+                if (!resend) {
+                    console.log('User cancelled resend');
+                    return;
+                }
+                console.log('User confirmed resend');
+            }
+
+            let assignment = '';
+            if (guest.pickupDriver || guest.pickupCarMake || guest.pickupCarNumber) {
+                assignment = 'Pick-up Assignment:\n';
+                if (guest.pickupDriver) assignment += `Driver: ${guest.pickupDriver}\n`;
+                if (guest.pickupCarMake || guest.pickupCarNumber) {
+                    assignment += `Car: ${guest.pickupCarMake || ''} ${guest.pickupCarNumber || ''}`.trim() + '\n';
+                }
+            } else {
+                assignment = 'Pick-up Assignment: TBA\n';
+            }
+            
+            const msg = `Dear ${guest.name},\n\nYour pick-up for arrival on ${guest.arrivalDate} at ${guest.arrivalTime} has been arranged.\n\n${assignment}\nWe look forward to welcoming you!\n\nBhatnagar family`;
+            window.open(`https://wa.me/${guest.mobile}?text=${encodeURIComponent(msg)}`, '_blank');
+            
+            try {
+                console.log('Updating Firebase: pickupMessageSent = true for guest ID:', id);
+                await update(ref(database, `guests/${id}`), { pickupMessageSent: true });
+                console.log('Firebase updated successfully');
+                showSuccess('Pickup message sent!');
+            } catch (err) {
+                console.error('Error updating message status:', err);
+                alert('Error saving message status: ' + err.message);
+            }
+        };
+        
+        window.sendDropWA = async (id) => {
+            const guest = guests.find(g => g.id === id);
+            if (!guest) {
+                alert('Guest not found');
+                return;
+            }
+            
+            console.log('Guest data:', guest);
+            console.log('dropMessageSent:', guest.dropMessageSent);
+            
+            if (guest.dropMessageSent === true) {
+                const resend = confirm(`⚠️ WhatsApp message was already sent for ${guest.name}'s drop.\n\nDo you want to send it again?`);
+                if (!resend) {
+                    console.log('User cancelled resend');
+                    return;
+                }
+                console.log('User confirmed resend');
+            }
+
+            let assignment = '';
+            if (guest.dropDriver || guest.dropCarMake || guest.dropCarNumber) {
+                assignment = 'Drop Assignment:\n';
+                if (guest.dropDriver) assignment += `Driver: ${guest.dropDriver}\n`;
+                if (guest.dropCarMake || guest.dropCarNumber) {
+                    assignment += `Car: ${guest.dropCarMake || ''} ${guest.dropCarNumber || ''}`.trim() + '\n';
+                }
+            } else {
+                assignment = 'Drop Assignment: TBA\n';
+            }
+            
+            const msg = `Dear ${guest.name},\n\nYour drop for departure on ${guest.departureDate} at ${guest.departureTime} has been arranged.\n\n${assignment}\nThank you for visiting us!\n\nBhatnagar family`;
+            window.open(`https://wa.me/${guest.mobile}?text=${encodeURIComponent(msg)}`, '_blank');
+            
+            try {
+                console.log('Updating Firebase: dropMessageSent = true for guest ID:', id);
+                await update(ref(database, `guests/${id}`), { dropMessageSent: true });
+                console.log('Firebase updated successfully');
+                showSuccess('Drop message sent!');
+            } catch (err) {
+                console.error('Error updating message status:', err);
+                alert('Error saving message status: ' + err.message);
+            }
+        };
 
         render();
     </script>
